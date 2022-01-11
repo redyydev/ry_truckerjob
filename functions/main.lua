@@ -187,20 +187,16 @@ function DrawText3Ds(x, y, z, text)
 	end
 end
 
-function progress(duration,label,DisableMouse)
-	TriggerEvent("ry_progbar:client:progress", {
-		name = "delivering",
-		duration = Config.Duration,
-		label = Config.Label,
-		useWhileDead = false,
-		canCancel = false,
-		controlDisables = {
-			disableMovement = false,
-			disableCarMovement = true,
-			disableMouse =  Config.DisableMouse,
-			disableCombat =  false,
-		}
-	})
+function progress(duration)
+	local vehicle = GetVehiclePedIsIn(PlayerPedId(), false)
+
+	SetVehicleEngineOn(vehicle, false, true, true)
+
+	exports['ry_progressbar']:startUI(duration)
+
+	Wait(duration)
+
+	SetVehicleEngineOn(vehicle, true, true, false)
 end
 
 RegisterNetEvent('ry_truckerjob:delivery')
@@ -208,8 +204,7 @@ AddEventHandler('ry_truckerjob:delivery', function(x,y,z)
 	RemoveBlip(Blips['delivery'])
 	Blips['delivery'] = nil
 
-	progress()
-	Citizen.Wait(Config.Duration)
+	progress(3000)
 	TriggerServerEvent('ry_truckerjob:pay', Config.MoneyPerDelivery)
 	TriggerEvent('ry_updateblip', x,y,z)
 	ESX.ShowNotification(Config.ReceiveMoney)
@@ -219,8 +214,7 @@ RegisterNetEvent('ry_truckerjob:last_delivery')
 AddEventHandler('ry_truckerjob:last_delivery', function(k)
 	RemoveBlip(Blips['delivery'])
 	Blips['delivery'] = nil
-	progress()
-	Citizen.Wait(Config.Duration)
+	progress(3000)
 	local vehicle_life = GetVehicleEngineHealth(GetVehiclePedIsIn(GetPlayerPed(-1), false))
 	if Config.ActivateDamage then
 		if vehicle_life >= 650 then
